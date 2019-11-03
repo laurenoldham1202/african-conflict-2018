@@ -48,7 +48,7 @@
         const tmp = L.geoJson(data).addTo(map);
 
         tmp.eachLayer((layer) => {
-            console.log(layer.feature.properties.NAME + layer.feature.properties.incidents_percapita);
+            console.log(layer.feature.properties.NAME + ': ' + layer.feature.properties.incidents_percapita);
         })
     });
 
