@@ -46,7 +46,10 @@
 
     d3.json('data/africa-countries-count.json').then((data) => {
         const tmp = L.geoJson(data).addTo(map);
-        console.log(tmp);
+
+        tmp.eachLayer((layer) => {
+            console.log(layer.feature.properties.NAME + layer.feature.properties.incidents_percapita);
+        })
     });
 
 </script>

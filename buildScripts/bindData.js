@@ -1,14 +1,14 @@
-"use strict"
+'use strict'
 
 const fs = require('fs');
 const csvParse = require('csv-parse');
 
 // request first file
-fs.readFile(__dirname + "/../data/africa-countries.json", 'utf8', (err, geojson) => {
+fs.readFile(__dirname + '/../data/africa-countries.json', 'utf8', (err, geojson) => {
 
     if (err) throw err;
     // nested call for the second (could use Promise or async solution)
-    fs.readFile(__dirname + "/../data/africa-conflict-2018.csv", "utf8", (err, csvString) => {
+    fs.readFile(__dirname + '/../data/africa-conflict-2018.csv', 'utf8', (err, csvString) => {
 
         if (err) throw err; // stop the script if error
 
@@ -37,7 +37,9 @@ function bindData(geojson, csvData) {
             // if IDs match
             if (feature.properties.NAME === row.country) {
                 // increment the count for that feature
-                count++
+                count++;
+
+                feature.properties.incidents_percapita = (row.freq / feature.properties.POP_EST) * 1000000;
             }
 
         });
