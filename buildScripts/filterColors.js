@@ -23,7 +23,7 @@ function extractSunsetDarkColors() {
             'SunsetDark': data['SunsetDark']
         };
 
-        console.log(chalk.blue('SunsetDark colors extracted from parsed json!'));
+        console.log(chalk.magenta('SunsetDark colors extracted from parsed json!'));
 
         // write subset to new file
         fs.writeFile(__dirname + '/../data/sunset-dark-colors.json', JSON.stringify(sunsetDarkColors), 'utf-8', (err) => {
