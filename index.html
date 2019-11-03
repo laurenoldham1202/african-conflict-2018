@@ -44,16 +44,22 @@
         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy;<a href="https://carto.com/attribution">CARTO</a>'
     }).addTo(map);
 
-    d3.json('data/africa-countries-counts.json').then((data) => {
-        const tmp = L.geoJson(data).addTo(map);
+    const countries = d3.json('data/africa-countries-counts.json');
+    const conflicts = d3.json('data/africa-conflict-2018.json');
+    const colors = d3.json('data/sunset-dark-colors.json');
 
-        tmp.eachLayer((layer) => {
-            console.log(layer.feature.properties.NAME + ': ' + layer.feature.properties.deaths_per_million);
-        });
-    });
+    Promise.all([countries, conflicts, colors]).then(dataReady);
 
-    // d3.json('data/africa-conflict-2018.json').then((data) => {
-    //     L.geoJson(data).addTo(map);
+    function dataReady(data) {
+        console.log(data);
+    }
+
+    // d3.json('data/africa-countries-counts.json').then((data) => {
+    //     const tmp = L.geoJson(data).addTo(map);
+    //
+    //     tmp.eachLayer((layer) => {
+    //         console.log(layer.feature.properties.NAME + ': ' + layer.feature.properties.deaths_per_million);
+    //     });
     // });
 
 </script>
