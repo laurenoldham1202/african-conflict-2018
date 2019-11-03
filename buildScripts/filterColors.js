@@ -1,37 +1,39 @@
 const fs = require('fs');
 const chalk = require('chalk');
 
+/**
+ * Extract SunsetDark sequential color scheme from
+ */
+function extractSunsetDarkColors() {
 
-function extractColors() {
-
-    // read in main cartocolors json
-    fs.readFile(__dirname + '/../project-files/cartocolors.json', function (err, response) {
+    // read in main carto-colors json (pulled from lesson)
+    fs.readFile(__dirname + '/../data/carto-colors.json', (err, response) => {
 
         if (err) throw err;
 
         // confirm successful load
-        console.log(chalk.blue("cartocolors.json data loaded!"));
+        console.log(chalk.magenta('carto-colors.json successfully loaded!'));
 
         const data = JSON.parse(response);
 
-        console.log(chalk.blue("cartocolors.json data parsed to JSON"));
+        console.log(chalk.magenta('carto-colors.json successfully parsed to JSON'));
 
-        // create new object with vivid color subset
-        const outputData = {
-            'Vivid': data['Vivid']
+        // create new object with sunsetdark color subset
+        const sunsetDarkColors = {
+            'SunsetDark': data['SunsetDark']
         };
 
-        console.log(chalk.blue("vivid scheme extracted from parsed data"));
+        console.log(chalk.blue('SunsetDark colors extracted from parsed json!'));
 
-        // write vivid subset to new file
-        fs.writeFile(__dirname + '/../data/vividcolors.json', JSON.stringify(outputData), 'utf-8', function (err) {
+        // write subset to new file
+        fs.writeFile(__dirname + '/../data/sunset-dark-colors.json', JSON.stringify(sunsetDarkColors), 'utf-8', (err) => {
 
             if (err) throw err;
 
-            console.log(chalk.blue('vividcolors.json written to data/ dir'));
+            console.log(chalk.magenta('sunset-dark-colors.json written to data/ directory!'));
         });
     });
 }
 
-// export function so it can be read by importing colorScheme.js into processData.js
-exports.extractColors = extractColors;
+// export function so it can be read into processData.js
+exports.extractSunsetDarkColors = extractSunsetDarkColors;
