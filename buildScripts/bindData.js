@@ -2,17 +2,24 @@
 
 const fs = require('fs');
 const csvParse = require('csv-parse');
+const chalk = require('chalk');
 
+/**
+ * Parse files and bind together
+ */
 function processBindFiles() {
+
     // read countries json
     fs.readFile(__dirname + '/../data/africa-countries.json', 'utf8', (err, geojson) => {
 
         if (err) throw err;
+        console.log(chalk.cyanBright('GeoJson successfully loaded!'));
 
         // read csv with african conflicts
         fs.readFile(__dirname + '/../data/africa-conflict-2018.csv', 'utf8', (err, csvString) => {
 
             if (err) throw err; // stop the script if error
+            console.log(chalk.cyanBright('CSV successfully loaded!'));
 
             // parse the CSV file from text to array of objects
             csvParse(csvString, {
@@ -20,13 +27,18 @@ function processBindFiles() {
             }, (err, csvData) => {
 
                 // bind csvdata to country polygons
-                bindData(JSON.parse(geojson), csvData);
+                bindCsvToGeojson(JSON.parse(geojson), csvData);
             });
         })
     });
 }
 
-function bindData(geojson, csvData) {
+/**
+ * Add count and deaths_per_million properties to matching geojson and csv rows (matched by country)
+ * @param geojson
+ * @param csvData
+ */
+function bindCsvToGeojson(geojson, csvData) {
 
     // loop through the features
     geojson.features.forEach((feature) => {
@@ -50,22 +62,9 @@ function bindData(geojson, csvData) {
         // when done looping, add the count as a feature property
         feature.properties.count = count;
     });
-
-    // done with data bind
-    writeFile(geojson);
-
-}
-
-function writeFile(geojson) {
-
-    fs.writeFile(__dirname + '/../data/africa-countries-count.json', JSON.stringify(geojson), 'utf8', function (err) {
-
-        if (err) throw err;
-
-        console.log('File successfully written.');
-    });
+    console.log(chalk.cyanBright('New feature properties added to geojson from csv!'));
 }
 
 // export functions so they can be read in processData.js
 exports.processBindFiles = processBindFiles;
-exports.bindData = bindData;
+exports.bindCsvToGeojson = bindCsvToGeojson;

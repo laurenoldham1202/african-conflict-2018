@@ -2,7 +2,6 @@ const fs = require('fs');
 const csv2geojson = require('csv2geojson');
 const chalk = require('chalk');
 
-
 // load traffic signals csv
 function convertCsv() {
     fs.readFile(__dirname + '/../data/africa-conflict-2018.csv', 'utf-8', (err, csvString) => {
