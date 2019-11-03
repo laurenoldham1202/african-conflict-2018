@@ -1,13 +1,14 @@
-'use strict'
+'use strict';
 
 const fs = require('fs');
 const csvParse = require('csv-parse');
 
-// request first file
+// read countries json
 fs.readFile(__dirname + '/../data/africa-countries.json', 'utf8', (err, geojson) => {
 
     if (err) throw err;
-    // nested call for the second (could use Promise or async solution)
+
+    // read csv with african conflicts
     fs.readFile(__dirname + '/../data/africa-conflict-2018.csv', 'utf8', (err, csvString) => {
 
         if (err) throw err; // stop the script if error
@@ -17,8 +18,8 @@ fs.readFile(__dirname + '/../data/africa-countries.json', 'utf8', (err, geojson)
             columns: true
         }, (err, csvData) => {
 
+            // bind csvdata to country polygons
             bindData(JSON.parse(geojson), csvData);
-
         });
     })
 });
@@ -27,19 +28,20 @@ function bindData(geojson, csvData) {
 
     // loop through the features
     geojson.features.forEach((feature) => {
-
-        // set a variable to 0
         let count = 0;
 
         // loop through the array of CSV data objects
         csvData.forEach((row) => {
 
-            // if IDs match
+            // if countries match
             if (feature.properties.NAME === row.country) {
+
                 // increment the count for that feature
                 count++;
 
-                feature.properties.incidents_percapita = (row.freq / feature.properties.POP_EST) * 1000000;
+                // create new property of number of fatalities per million citizens
+                // row.freq represents number of fatalities per country
+                feature.properties.deaths_per_million = (row.freq / feature.properties.POP_EST) * 1000000;
             }
 
         });
@@ -60,7 +62,7 @@ function writeFile(geojson) {
 
         if (err) throw err;
 
-        console.log('File all done. Great success!');
+        console.log('File successfully written.');
     })
 
 }

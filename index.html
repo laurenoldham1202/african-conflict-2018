@@ -5,7 +5,7 @@
 <head>
     <meta charset="utf-8">
 
-    <title>Lesson 02 template</title>
+    <title>African Conflict 2018</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css" />
     <style>
         body {
@@ -48,7 +48,7 @@
         const tmp = L.geoJson(data).addTo(map);
 
         tmp.eachLayer((layer) => {
-            console.log(layer.feature.properties.NAME + ': ' + layer.feature.properties.incidents_percapita);
+            console.log(layer.feature.properties.NAME + ': ' + layer.feature.properties.deaths_per_million);
         })
     });
 
