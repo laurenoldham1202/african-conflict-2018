@@ -3,26 +3,28 @@
 const fs = require('fs');
 const csvParse = require('csv-parse');
 
-// read countries json
-fs.readFile(__dirname + '/../data/africa-countries.json', 'utf8', (err, geojson) => {
+function processBindFiles() {
+    // read countries json
+    fs.readFile(__dirname + '/../data/africa-countries.json', 'utf8', (err, geojson) => {
 
-    if (err) throw err;
+        if (err) throw err;
 
-    // read csv with african conflicts
-    fs.readFile(__dirname + '/../data/africa-conflict-2018.csv', 'utf8', (err, csvString) => {
+        // read csv with african conflicts
+        fs.readFile(__dirname + '/../data/africa-conflict-2018.csv', 'utf8', (err, csvString) => {
 
-        if (err) throw err; // stop the script if error
+            if (err) throw err; // stop the script if error
 
-        // parse the CSV file from text to array of objects
-        csvParse(csvString, {
-            columns: true
-        }, (err, csvData) => {
+            // parse the CSV file from text to array of objects
+            csvParse(csvString, {
+                columns: true
+            }, (err, csvData) => {
 
-            // bind csvdata to country polygons
-            bindData(JSON.parse(geojson), csvData);
-        });
-    })
-});
+                // bind csvdata to country polygons
+                bindData(JSON.parse(geojson), csvData);
+            });
+        })
+    });
+}
 
 function bindData(geojson, csvData) {
 
@@ -43,12 +45,10 @@ function bindData(geojson, csvData) {
                 // row.freq represents number of fatalities per country
                 feature.properties.deaths_per_million = (row.freq / feature.properties.POP_EST) * 1000000;
             }
-
         });
 
         // when done looping, add the count as a feature property
         feature.properties.count = count;
-
     });
 
     // done with data bind
@@ -63,6 +63,9 @@ function writeFile(geojson) {
         if (err) throw err;
 
         console.log('File successfully written.');
-    })
-
+    });
 }
+
+// export functions so they can be read in processData.js
+exports.processBindFiles = processBindFiles;
+exports.bindData = bindData;
