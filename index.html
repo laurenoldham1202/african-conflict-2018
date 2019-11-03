@@ -44,7 +44,7 @@
         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy;<a href="https://carto.com/attribution">CARTO</a>'
     }).addTo(map);
 
-    d3.json('data/africa-countries-count.json').then((data) => {
+    d3.json('data/africa-countries-counts.json').then((data) => {
         const tmp = L.geoJson(data).addTo(map);
 
         tmp.eachLayer((layer) => {

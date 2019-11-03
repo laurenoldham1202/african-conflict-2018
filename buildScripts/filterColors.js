@@ -12,25 +12,25 @@ function extractSunsetDarkColors() {
         if (err) throw err;
 
         // confirm successful load
-        console.log(chalk.magenta('carto-colors.json successfully loaded!'));
+        console.log(chalk.magentaBright('carto-colors.json successfully loaded!'));
 
         const data = JSON.parse(response);
 
-        console.log(chalk.magenta('carto-colors.json successfully parsed to JSON'));
+        console.log(chalk.magentaBright('carto-colors.json successfully parsed to JSON'));
 
         // create new object with sunsetdark color subset
         const sunsetDarkColors = {
             'SunsetDark': data['SunsetDark']
         };
 
-        console.log(chalk.magenta('SunsetDark colors extracted from parsed json!'));
+        console.log(chalk.magentaBright('SunsetDark colors extracted from parsed json!'));
 
         // write subset to new file
         fs.writeFile(__dirname + '/../data/sunset-dark-colors.json', JSON.stringify(sunsetDarkColors), 'utf-8', (err) => {
 
             if (err) throw err;
 
-            console.log(chalk.magenta('sunset-dark-colors.json written to data/ directory!'));
+            console.log(chalk.magentaBright('sunset-dark-colors.json written to data/ directory!'));
         });
     });
 }

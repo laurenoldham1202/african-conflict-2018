@@ -27,9 +27,17 @@ function processBindFiles() {
             }, (err, csvData) => {
 
                 // bind csvdata to country polygons
-                bindCsvToGeojson(JSON.parse(geojson), csvData);
+                const boundGeojson = bindCsvToGeojson(JSON.parse(geojson), csvData);
+
+                // write file to data directory
+                fs.writeFile(__dirname + '/../data/africa-countries-counts.json', JSON.stringify(boundGeojson), 'utf8', function (err) {
+
+                    if (err) throw err;
+
+                    console.log(chalk.cyanBright('africa-countries-counts.json written'));
+                });
             });
-        })
+        });
     });
 }
 
@@ -63,6 +71,7 @@ function bindCsvToGeojson(geojson, csvData) {
         feature.properties.count = count;
     });
     console.log(chalk.cyanBright('New feature properties added to geojson from csv!'));
+    return geojson;
 }
 
 // export functions so they can be read in processData.js

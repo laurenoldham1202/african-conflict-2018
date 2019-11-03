@@ -2,19 +2,21 @@ const fs = require('fs');
 const csv2geojson = require('csv2geojson');
 const chalk = require('chalk');
 
-// load traffic signals csv
+/**
+ * Convert csv to geojson for mapping
+ */
 function convertCsv() {
     fs.readFile(__dirname + '/../data/africa-conflict-2018.csv', 'utf-8', (err, csvString) => {
 
         if (err) throw err;
 
-        console.log(chalk.green('CSV succesfully loaded.'));
+        console.log(chalk.greenBright('CSV succesfully loaded!'));
 
         // convert csv to geojson, assigning proper coordinates
         csv2geojson.csv2geojson(csvString, {
             latfield: 'lat',
             lonfield: 'lng',
-            delimiter: ','
+            delimiter: ',',
         }, (err, geojson) => {
 
             if (err) throw err;
@@ -26,12 +28,17 @@ function convertCsv() {
 
                 if (err) throw err;
 
-                console.log(chalk.green('africa-conflict-2018.json written to file'));
+                console.log(chalk.greenBright('africa-conflict-2018.json successfully written!'));
             });
         })
     });
 }
 
+/**
+ * Only retain desired fields from csv, convert to FEatureCollection for mapping
+ * @param geojson
+ * @returns {{features: Array, type: string}}
+ */
 function filterFields(geojson) {
 
     var features = geojson.features,  // shortcut to geojson features
@@ -51,16 +58,16 @@ function filterFields(geojson) {
 
         // push features with filtered properties to empty array
         newFeatures.push({
-            "type": feature.type,
-            "geometry": feature.geometry,
-            "properties": propertiesFiltered,
+            'type': feature.type,
+            'geometry': feature.geometry,
+            'properties': propertiesFiltered,
         });
     });
 
     // return feature collection geojson
     return {
-        "type": "FeatureCollection",
-        "features": newFeatures
+        'type': 'FeatureCollection',
+        'features': newFeatures,
     }
 }
 
