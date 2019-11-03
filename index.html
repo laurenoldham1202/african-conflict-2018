@@ -49,8 +49,12 @@
 
         tmp.eachLayer((layer) => {
             console.log(layer.feature.properties.NAME + ': ' + layer.feature.properties.deaths_per_million);
-        })
+        });
     });
+
+    // d3.json('data/africa-conflict-2018.json').then((data) => {
+    //     L.geoJson(data).addTo(map);
+    // });
 
 </script>
 </body>

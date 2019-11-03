@@ -17,6 +17,8 @@
   },
   "homepage": "https://github.com/laurenoldham1202/african-conflict-2018#readme",
   "dependencies": {
-    "csv-parse": "^4.6.5"
+    "chalk": "^2.4.2",
+    "csv-parse": "^4.6.5",
+    "csv2geojson": "^5.1.1"
   }
 }
