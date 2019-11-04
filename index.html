@@ -184,7 +184,11 @@
                 // marker = L.circleMarker([coords[1], coords[0]]);
                 marker = L.geoJson(feature, {
                     style: () => ({
-                        color: 'white', opacity: 1,
+                        fillColor: 'whitesmoke',
+                        opacity: 0.5,
+                        fillOpacity: 1,
+                        weight: 5,
+                        radius: 5,
                     }),
                     pointToLayer: (feature, latlng) => {
                         return L.circleMarker(latlng);
