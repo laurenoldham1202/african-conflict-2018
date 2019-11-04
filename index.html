@@ -137,14 +137,19 @@
         const legendBreaks = ['Undefined', '0 - 3', '3 - 9', '9 - 20', '20 - 60', '60 - 120', '120 - 410'];
 
         legendBreaks.forEach((brk, i) => {
-            // console.log(brk, i);
-            console.log(colors.SunsetDark[6][i]);
-            if (brk === 'Undefined') {
-                legend.append(`<i style="background: white"> ${brk}</i>`);
 
-            } else {
-                legend.append(`<i style="background: ${colors.SunsetDark[6][i - 1]}"> ${brk}</i>`);
-            }
+            const backgroundCol = brk === 'Undefined' ? '#FFF' : colors.SunsetDark[6][i - 1];
+            legend.append(`<i style="background: ${ backgroundCol }"> ${ brk } </i>`);
+
+
+            // // console.log(brk, i);
+            // console.log(colors.SunsetDark[6][i]);
+            // if (brk === 'Undefined') {
+            //     legend.append(`<i style="background: white"> ${brk}</i>`);
+            //
+            // } else {
+            //     legend.append(`<i style="background: ${colors.SunsetDark[6][i - 1]}"> ${brk}</i>`);
+            // }
         });
 
         // // reference html id
@@ -221,10 +226,12 @@
                 marker = L.geoJson(feature, {
                     style: () => ({
                         fillColor: 'whitesmoke',
-                        opacity: 0.5,
+                        color: '#414140',
+                        opacity: 1,
                         fillOpacity: 1,
-                        weight: 5,
-                        radius: 5,
+                        weight: 1,
+                        radius: feature.properties.incident_fatalities * 4,
+                        // radius: 180,
                     }),
                     pointToLayer: (feature, latlng) => {
                         return L.circleMarker(latlng)
