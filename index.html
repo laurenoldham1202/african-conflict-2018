@@ -23,37 +23,7 @@
             bottom: 0;
         }
 
-        .legend {
-            line-height: 18px;
-            color: #555;
-            z-index: 1000;
-            background: #FFF;
-            padding: 1rem;
-        }
-
-        .legend i {
-            width: 18px;
-            height: 18px;
-            float: left;
-            margin-right: 8px;
-            opacity: 1;
-            z-index: 1000;
-        }
-
-        .legend-container {
-            background: rgba(255, 255, 255, 1);
-            /*width: 15rem;*/
-            /*height: 15rem;*/
-            border-radius: 4px;
-            z-index: 500;
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            display: flex;
-            flex-direction: row;
-        }
-
-        #mapLegend {
+        #map-legend {
             position: absolute;
             top: 10px;
             right: 0;
@@ -62,9 +32,10 @@
             margin: auto;
             display: inline-block;
             padding: 0 1.25rem;
+            cursor: pointer;
         }
 
-        #mapLegend i {
+        #map-legend i {
             width: 14.28%;
             height: 2.25rem;
             float: left;
@@ -80,16 +51,8 @@
 <body>
 
 <div id="map"></div>
-<div class="legend-container"></div>
-<div id="mapLegend">
-<!--    <i style="background: #e63c2e">< -25</i>-->
-<!--    <i style="background: #f0857c">-24 to -10</i>-->
-<!--    <i style="background: #f9cbc7">-10 to <0</i>-->
-<!--    <i style="background: #ffffff">0</i>-->
-<!--    <i style="background: #b8cfd2">>0 to +10</i>-->
-<!--    <i style="background: #6b9a9f; color: whitesmoke;">+11 to +24</i>-->
-<!--    <i style="background: #155F66; color: whitesmoke;">> +25</i>-->
-<!--    <i style="background: #C6CBCB;">Undefined</i>-->
+<div id="map-legend">
+
 </div>
 
 <script src="https://d3js.org/d3-fetch.v1.min.js"></script>
@@ -100,8 +63,8 @@
 <script>
     // map options
     var options = {
-        center: [0.5832, 25.5085],
-        zoom: 4
+        center: [3.5832, 25.5085],
+        zoom: 4,
     };
     // instantiate Leaflet map
     var map = L.map('map', options);
@@ -124,82 +87,14 @@
         const conflicts = data[1];
         const colors = data[2];
 
-//         // store a reference to the HTML list
-//         const legendList = $('#legend-list');
-//
-// // loop through the features and create a new
-// // list item for each feature in the legend
-//         for(let i = 1; i <= districts.features.length; i++) {
-//             legendList.append('<li class="legend-item" id="district-' + i + '"><a style="color:' + colors.Vivid[10][i -1] + '" href="#">District ' + i + ' (<span></span>)</a></li>');
-//         }
-
-        const legend = $('#mapLegend');
+        const legend = $('#map-legend');
         const legendBreaks = ['Undefined', '0 - 3', '3 - 9', '9 - 20', '20 - 60', '60 - 120', '120 - 410'];
 
         legendBreaks.forEach((brk, i) => {
-
+            const color = i > 4 ? '#F1F1F1' : '#000';  // text color for legend, white for darker backgrounds
             const backgroundCol = brk === 'Undefined' ? '#FFF' : colors.SunsetDark[6][i - 1];
-            legend.append(`<i style="background: ${ backgroundCol }"> ${ brk } </i>`);
-
-
-            // // console.log(brk, i);
-            // console.log(colors.SunsetDark[6][i]);
-            // if (brk === 'Undefined') {
-            //     legend.append(`<i style="background: white"> ${brk}</i>`);
-            //
-            // } else {
-            //     legend.append(`<i style="background: ${colors.SunsetDark[6][i - 1]}"> ${brk}</i>`);
-            // }
+            legend.append(`<i style="background: ${ backgroundCol }; color: ${ color }"> ${ brk } </i>`);
         });
-
-        // // reference html id
-        // const legendList = $('#legend-list');
-        //
-        // var breaks = [0.01, 3, 9, 20, 60, 120, 410];
-        //
-        // breaks.forEach(val => {
-        //     // console.log(val);
-        //     const col = styleCountries(val, colors);
-        //     // console.log(col);
-        // });
-        //
-        //
-        // // loop through the features and create a new list item for each feature in the legend
-        // for (let i = 1; i <= countries.features.length; i++) {
-        //
-        //
-        //
-        //
-        //     countries.features.forEach(feat => {
-        //         // console.log(feat.properties.deaths_per_million);
-        //
-        //         // legendList.append(`<li class="legend-item" id="${feat.properties.NAME}">
-        //         //                 <a style="color: ${colors.SunsetDark[6][i -1]}" href="#">${feat.properties.NAME} (<span></span>)</a></li>`);
-        //     });
-        //
-        // }
-
-
-        // var legend = L.control({position: 'bottomright'});
-        //
-        // legend.onAdd = (map) => {
-        //
-        //     var div = L.DomUtil.create('div', 'info legend'),
-        //         grades = [0.01, 3, 9, 20, 60, 120, 410];
-        //
-        //     // loop through our density intervals and generate a label with a colored square for each interval
-        //     for (var i = 0; i < grades.length; i++) {
-        //         // console.log(grades[i]);
-        //         div.innerHTML +=
-        //             '<i style="background:' + styleCountries(grades[i], colors) + '"></i> ' +
-        //             grades[i - 1] + (grades[i] ? '&ndash;' + grades[i] + '<br>' : '+');
-        //     }
-        //
-        //     return div;
-        // };
-        //
-        // legend.addTo(map);
-        // console.log(countries);
 
         var countriesLayer = L.geoJson(countries, {
             style: (feature) => {
@@ -214,6 +109,8 @@
             },
             onEachFeature: (feature, layer) => {
                 // console.log(layer.feature.properties.NAME + ': ' + layer.feature.properties.deaths_per_million);
+                // console.log(layer.options.fillColor);
+                // console.log(feature);
             }
         }).addTo(map);
 
@@ -221,9 +118,9 @@
 
         // loop through each signal
         conflicts.features.forEach((feature) => {
-            var coords = feature.geometry.coordinates,
+            // var coords = feature.geometry.coordinates,
                 // marker = L.circleMarker([coords[1], coords[0]]);
-                marker = L.geoJson(feature, {
+                var marker = L.geoJson(feature, {
                     style: () => ({
                         fillColor: 'whitesmoke',
                         color: '#414140',
@@ -246,6 +143,18 @@
 
         // add marker cluster layer to map
         map.addLayer(markers);
+
+        $('#map-legend i').on('mouseover', function() {
+            // console.log(this.style.background);
+
+            countriesLayer.eachLayer(layer => {
+                if (this.style.background === hexToRGB(layer.options.fillColor)) {
+
+                    // console.log(hexToRGB(layer.options.fillColor));
+                    console.log(layer.feature.properties.NAME);
+                }
+            })
+        });
     }
 
     /**
@@ -263,16 +172,19 @@
                             feature <= 120 ? colors.SunsetDark[6][4] :
                                 feature <= 410 ? colors.SunsetDark[6][5] :
                                     '#FFF';
-
     }
 
-    // d3.json('data/africa-countries-counts.json').then((data) => {
-    //     const tmp = L.geoJson(data).addTo(map);
-    //
-    //     tmp.eachLayer((layer) => {
-    //         console.log(layer.feature.properties.NAME + ': ' + layer.feature.properties.deaths_per_million);
-    //     });
-    // });
+    function hexToRGB(hex) {
+        let c;
+        if (/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)) {
+            c = hex.substring(1).split('');
+            if (c.length === 3) {
+                c = [c[0], c[0], c[1], c[1], c[2], c[2]];
+            }
+            c = '0x' + c.join('');
+            return 'rgb(' + ((c >> 16) & 255) + ', ' + ((c>>8) & 255) + ', ' + (c&255) + ')';
+        }
+    }
 
 </script>
 </body>
