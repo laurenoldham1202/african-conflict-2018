@@ -44,14 +44,49 @@
         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy;<a href="https://carto.com/attribution">CARTO</a>'
     }).addTo(map);
 
-    const countries = d3.json('data/africa-countries-counts.json');
-    const conflicts = d3.json('data/africa-conflict-2018.json');
-    const colors = d3.json('data/sunset-dark-colors.json');
+    const countriesJson = d3.json('data/africa-countries-counts.json');
+    const conflictsJson = d3.json('data/africa-conflict-2018.json');
+    const colorsJson = d3.json('data/sunset-dark-colors.json');
 
-    Promise.all([countries, conflicts, colors]).then(dataReady);
+    Promise.all([countriesJson, conflictsJson, colorsJson]).then(dataReady);
 
     function dataReady(data) {
-        console.log(data);
+
+        const countries = data[0];
+        const conflicts = data[1];
+        const colors = data[2];
+
+        // console.log(countries);
+
+        var countriesLayer = L.geoJson(countries, {
+            style: (feature) => {
+                // style each polygon categorically with Vivid color palette
+                return {
+                    fillOpacity: 1,
+                    color: '#FFF',
+                    weight: 1,
+                    fillColor: styleCountries(feature.properties.deaths_per_million, colors)
+                }
+            },
+            onEachFeature: (feature) => {
+                console.log(feature);
+            }
+        }).addTo(map);
+    }
+
+    function styleCountries(feature, colors) {
+        // console.log(feature);
+        // var prop = feature.properties.deaths_per_million;
+
+        console.log(colors.SunsetDark);
+        return feature <= 3 ? colors.SunsetDark[6][0] :
+            feature <= 9 ? colors.SunsetDark[6][1] :
+                feature <= 20 ? colors.SunsetDark[6][2] :
+                    feature <= 60 ? colors.SunsetDark[6][3] :
+                        feature <= 120 ? colors.SunsetDark[6][4] :
+                            feature <= 410 ? colors.SunsetDark[6][5] :
+                                '#FFF';
+
     }
 
     // d3.json('data/africa-countries-counts.json').then((data) => {
