@@ -22,6 +22,56 @@
             top: 0;
             bottom: 0;
         }
+
+
+        #ui {
+            position: absolute;
+            z-index: 1000;
+            bottom: 18px;
+            right: 18px;
+            padding: 6px 12px;
+            background: rgba(256,256,256,.9);
+        }
+
+        #ui ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        #ui li {
+            margin-bottom: 6px;
+        }
+
+        #ui a {
+            text-decoration: none;
+        }
+
+        #ui a:hover {
+            font-weight: bold;
+        }
+
+        .highlight {
+            font-weight: bold;
+        }
+
+
+        .legend {
+            line-height: 18px;
+            color: #555;
+            z-index: 1000;
+            background: #FFF;
+            padding: 1rem;
+        }
+
+        .legend i {
+            width: 18px;
+            height: 18px;
+            float: left;
+            margin-right: 8px;
+            opacity: 1;
+            z-index: 1000;
+
+        }
     </style>
 </head>
 
@@ -31,6 +81,7 @@
 
 <script src="https://d3js.org/d3-fetch.v1.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js"></script>
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
 <script src="libs/Leaflet.markercluster/leaflet.markercluster.js"></script>
 
 <script>
@@ -60,6 +111,40 @@
         const conflicts = data[1];
         const colors = data[2];
 
+        // reference html id
+        const legendList = $('#legend-list');
+
+        // // loop through the features and create a new list item for each feature in the legend
+        // for (let i = 1; i <= countries.features.length; i++) {
+        //
+        //     countries.features.forEach(feat => {
+        //         console.log(feat);
+        //         legendList.append(`<li class="legend-item" id="${feat.properties.NAME}">
+        //                         <a style="color: ${colors.SunsetDark[6][i -1]}" href="#">${feat.properties.NAME} (<span></span>)</a></li>`);
+        //     });
+        //
+        // }
+
+
+        var legend = L.control({position: 'bottomright'});
+
+        legend.onAdd = (map) => {
+
+            var div = L.DomUtil.create('div', 'info legend'),
+                grades = [0.01, 3, 9, 20, 60, 120, 410];
+
+            // loop through our density intervals and generate a label with a colored square for each interval
+            for (var i = 0; i < grades.length; i++) {
+                console.log(grades[i]);
+                div.innerHTML +=
+                    '<i style="background:' + styleCountries(grades[i], colors) + '"></i> ' +
+                    grades[i - 1] + (grades[i] ? '&ndash;' + grades[i] + '<br>' : '+');
+            }
+
+            return div;
+        };
+
+        legend.addTo(map);
         // console.log(countries);
 
         var countriesLayer = L.geoJson(countries, {
@@ -74,7 +159,7 @@
                 }
             },
             onEachFeature: (feature) => {
-                console.log(feature);
+                // console.log(feature);
             }
         }).addTo(map);
 
@@ -83,7 +168,7 @@
         // loop through each signal
         conflicts.features.forEach((feature) => {
             var coords = feature.geometry.coordinates,
-                marker = L.circleMarker([coords[1], coords[0]], {style: () =>{ return {color: '#FFF'} }});
+                marker = L.circleMarker([coords[1], coords[0]]);
 
             marker.bindTooltip(`
                 Number of Fatalities: ${feature.properties.incident_fatalities} <br>
