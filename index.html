@@ -7,6 +7,8 @@
 
     <title>African Conflict 2018</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css" />
+    <link rel="stylesheet" href="libs/Leaflet.markercluster/MarkerCluster.Default.css"> />
+    <link rel="stylesheet" href="libs/Leaflet.markercluster/MarkerCluster.css"> />
     <style>
         body {
             font-family: sans-serif;
@@ -29,6 +31,8 @@
 
 <script src="https://d3js.org/d3-fetch.v1.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js"></script>
+<script src="libs/Leaflet.markercluster/leaflet.markercluster.js"></script>
+
 <script>
     // map options
     var options = {
@@ -64,6 +68,7 @@
                 return {
                     fillOpacity: 1,
                     color: '#FFF',
+                    opacity: 0.5,
                     weight: 1,
                     fillColor: styleCountries(feature.properties.deaths_per_million, colors)
                 }
@@ -72,13 +77,29 @@
                 console.log(feature);
             }
         }).addTo(map);
+
+        var markers = L.markerClusterGroup();
+
+        // loop through each signal
+        conflicts.features.forEach((feature) => {
+            var coords = feature.geometry.coordinates,
+                marker = L.circleMarker([coords[1], coords[0]]);
+
+            // add each marker to markers cluster
+            markers.addLayer(marker);
+        });
+
+        // add marker cluster layer to map
+        map.addLayer(markers);
     }
 
+    /**
+     * Style countries based on number of fatalities per 1 million people
+     * @param feature
+     * @param colors
+     * @returns {string}
+     */
     function styleCountries(feature, colors) {
-        // console.log(feature);
-        // var prop = feature.properties.deaths_per_million;
-
-        console.log(colors.SunsetDark);
         return feature <= 3 ? colors.SunsetDark[6][0] :
             feature <= 9 ? colors.SunsetDark[6][1] :
                 feature <= 20 ? colors.SunsetDark[6][2] :
