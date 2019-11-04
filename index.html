@@ -23,38 +23,6 @@
             bottom: 0;
         }
 
-
-        #ui {
-            position: absolute;
-            z-index: 1000;
-            bottom: 18px;
-            right: 18px;
-            padding: 6px 12px;
-            background: rgba(256,256,256,.9);
-        }
-
-        #ui ul {
-            list-style-type: none;
-            padding: 0;
-        }
-
-        #ui li {
-            margin-bottom: 6px;
-        }
-
-        #ui a {
-            text-decoration: none;
-        }
-
-        #ui a:hover {
-            font-weight: bold;
-        }
-
-        .highlight {
-            font-weight: bold;
-        }
-
-
         .legend {
             line-height: 18px;
             color: #555;
@@ -70,7 +38,41 @@
             margin-right: 8px;
             opacity: 1;
             z-index: 1000;
+        }
 
+        .legend-container {
+            background: rgba(255, 255, 255, 1);
+            /*width: 15rem;*/
+            /*height: 15rem;*/
+            border-radius: 4px;
+            z-index: 500;
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            display: flex;
+            flex-direction: row;
+        }
+
+        #mapLegend {
+            position: absolute;
+            top: 10px;
+            right: 0;
+            left: 2.5rem;
+            z-index: 1000;
+            margin: auto;
+            display: inline-block;
+            padding: 0 1.25rem;
+        }
+
+        #mapLegend i {
+            width: 14.28%;
+            height: 2.25rem;
+            float: left;
+            opacity: 1;
+            line-height: 2.25rem;
+            font-size: 0.8rem;
+            text-align: center;
+            font-style: normal;
         }
     </style>
 </head>
@@ -78,6 +80,17 @@
 <body>
 
 <div id="map"></div>
+<div class="legend-container"></div>
+<div id="mapLegend">
+<!--    <i style="background: #e63c2e">< -25</i>-->
+<!--    <i style="background: #f0857c">-24 to -10</i>-->
+<!--    <i style="background: #f9cbc7">-10 to <0</i>-->
+<!--    <i style="background: #ffffff">0</i>-->
+<!--    <i style="background: #b8cfd2">>0 to +10</i>-->
+<!--    <i style="background: #6b9a9f; color: whitesmoke;">+11 to +24</i>-->
+<!--    <i style="background: #155F66; color: whitesmoke;">> +25</i>-->
+<!--    <i style="background: #C6CBCB;">Undefined</i>-->
+</div>
 
 <script src="https://d3js.org/d3-fetch.v1.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js"></script>
@@ -111,53 +124,76 @@
         const conflicts = data[1];
         const colors = data[2];
 
-        // reference html id
-        const legendList = $('#legend-list');
+//         // store a reference to the HTML list
+//         const legendList = $('#legend-list');
+//
+// // loop through the features and create a new
+// // list item for each feature in the legend
+//         for(let i = 1; i <= districts.features.length; i++) {
+//             legendList.append('<li class="legend-item" id="district-' + i + '"><a style="color:' + colors.Vivid[10][i -1] + '" href="#">District ' + i + ' (<span></span>)</a></li>');
+//         }
 
-        var breaks = [0.01, 3, 9, 20, 60, 120, 410];
+        const legend = $('#mapLegend');
+        const legendBreaks = ['Undefined', '0 - 3', '3 - 9', '9 - 20', '20 - 60', '60 - 120', '120 - 410'];
 
-        breaks.forEach(val => {
-            // console.log(val);
-            const col = styleCountries(val, colors);
-            // console.log(col);
+        legendBreaks.forEach((brk, i) => {
+            // console.log(brk, i);
+            console.log(colors.SunsetDark[6][i]);
+            if (brk === 'Undefined') {
+                legend.append(`<i style="background: white"> ${brk}</i>`);
+
+            } else {
+                legend.append(`<i style="background: ${colors.SunsetDark[6][i - 1]}"> ${brk}</i>`);
+            }
         });
 
+        // // reference html id
+        // const legendList = $('#legend-list');
+        //
+        // var breaks = [0.01, 3, 9, 20, 60, 120, 410];
+        //
+        // breaks.forEach(val => {
+        //     // console.log(val);
+        //     const col = styleCountries(val, colors);
+        //     // console.log(col);
+        // });
+        //
+        //
+        // // loop through the features and create a new list item for each feature in the legend
+        // for (let i = 1; i <= countries.features.length; i++) {
+        //
+        //
+        //
+        //
+        //     countries.features.forEach(feat => {
+        //         // console.log(feat.properties.deaths_per_million);
+        //
+        //         // legendList.append(`<li class="legend-item" id="${feat.properties.NAME}">
+        //         //                 <a style="color: ${colors.SunsetDark[6][i -1]}" href="#">${feat.properties.NAME} (<span></span>)</a></li>`);
+        //     });
+        //
+        // }
 
-        // loop through the features and create a new list item for each feature in the legend
-        for (let i = 1; i <= countries.features.length; i++) {
 
-
-
-
-            countries.features.forEach(feat => {
-                // console.log(feat.properties.deaths_per_million);
-
-                // legendList.append(`<li class="legend-item" id="${feat.properties.NAME}">
-                //                 <a style="color: ${colors.SunsetDark[6][i -1]}" href="#">${feat.properties.NAME} (<span></span>)</a></li>`);
-            });
-
-        }
-
-
-        var legend = L.control({position: 'bottomright'});
-
-        legend.onAdd = (map) => {
-
-            var div = L.DomUtil.create('div', 'info legend'),
-                grades = [0.01, 3, 9, 20, 60, 120, 410];
-
-            // loop through our density intervals and generate a label with a colored square for each interval
-            for (var i = 0; i < grades.length; i++) {
-                // console.log(grades[i]);
-                div.innerHTML +=
-                    '<i style="background:' + styleCountries(grades[i], colors) + '"></i> ' +
-                    grades[i - 1] + (grades[i] ? '&ndash;' + grades[i] + '<br>' : '+');
-            }
-
-            return div;
-        };
-
-        legend.addTo(map);
+        // var legend = L.control({position: 'bottomright'});
+        //
+        // legend.onAdd = (map) => {
+        //
+        //     var div = L.DomUtil.create('div', 'info legend'),
+        //         grades = [0.01, 3, 9, 20, 60, 120, 410];
+        //
+        //     // loop through our density intervals and generate a label with a colored square for each interval
+        //     for (var i = 0; i < grades.length; i++) {
+        //         // console.log(grades[i]);
+        //         div.innerHTML +=
+        //             '<i style="background:' + styleCountries(grades[i], colors) + '"></i> ' +
+        //             grades[i - 1] + (grades[i] ? '&ndash;' + grades[i] + '<br>' : '+');
+        //     }
+        //
+        //     return div;
+        // };
+        //
+        // legend.addTo(map);
         // console.log(countries);
 
         var countriesLayer = L.geoJson(countries, {
@@ -172,7 +208,7 @@
                 }
             },
             onEachFeature: (feature, layer) => {
-                console.log(layer.feature.properties.NAME + ': ' + layer.feature.properties.deaths_per_million);
+                // console.log(layer.feature.properties.NAME + ': ' + layer.feature.properties.deaths_per_million);
             }
         }).addTo(map);
 
@@ -191,14 +227,11 @@
                         radius: 5,
                     }),
                     pointToLayer: (feature, latlng) => {
-                        return L.circleMarker(latlng);
+                        return L.circleMarker(latlng)
+                            .bindTooltip(`Number of Fatalities: ${feature.properties.incident_fatalities}
+                                          <br>Country: ${feature.properties.country}`);
                     }
                 });
-
-            marker.bindTooltip(`
-                Number of Fatalities: ${feature.properties.incident_fatalities} <br>
-                Country: ${feature.properties.country}
-            `);
 
             // add each marker to markers cluster
             markers.addLayer(marker);
