@@ -181,7 +181,15 @@
         // loop through each signal
         conflicts.features.forEach((feature) => {
             var coords = feature.geometry.coordinates,
-                marker = L.circleMarker([coords[1], coords[0]]);
+                // marker = L.circleMarker([coords[1], coords[0]]);
+                marker = L.geoJson(feature, {
+                    style: () => ({
+                        color: 'white', opacity: 1,
+                    }),
+                    pointToLayer: (feature, latlng) => {
+                        return L.circleMarker(latlng);
+                    }
+                });
 
             marker.bindTooltip(`
                 Number of Fatalities: ${feature.properties.incident_fatalities} <br>
