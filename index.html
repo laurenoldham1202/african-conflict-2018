@@ -83,7 +83,12 @@
         // loop through each signal
         conflicts.features.forEach((feature) => {
             var coords = feature.geometry.coordinates,
-                marker = L.circleMarker([coords[1], coords[0]]);
+                marker = L.circleMarker([coords[1], coords[0]], {style: () =>{ return {color: '#FFF'} }});
+
+            marker.bindTooltip(`
+                Number of Fatalities: ${feature.properties.incident_fatalities} <br>
+                Country: ${feature.properties.country}
+            `);
 
             // add each marker to markers cluster
             markers.addLayer(marker);
