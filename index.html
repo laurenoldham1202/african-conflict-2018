@@ -114,16 +114,29 @@
         // reference html id
         const legendList = $('#legend-list');
 
-        // // loop through the features and create a new list item for each feature in the legend
-        // for (let i = 1; i <= countries.features.length; i++) {
-        //
-        //     countries.features.forEach(feat => {
-        //         console.log(feat);
-        //         legendList.append(`<li class="legend-item" id="${feat.properties.NAME}">
-        //                         <a style="color: ${colors.SunsetDark[6][i -1]}" href="#">${feat.properties.NAME} (<span></span>)</a></li>`);
-        //     });
-        //
-        // }
+        var breaks = [0.01, 3, 9, 20, 60, 120, 410];
+
+        breaks.forEach(val => {
+            // console.log(val);
+            const col = styleCountries(val, colors);
+            // console.log(col);
+        });
+
+
+        // loop through the features and create a new list item for each feature in the legend
+        for (let i = 1; i <= countries.features.length; i++) {
+
+
+
+
+            countries.features.forEach(feat => {
+                // console.log(feat.properties.deaths_per_million);
+
+                // legendList.append(`<li class="legend-item" id="${feat.properties.NAME}">
+                //                 <a style="color: ${colors.SunsetDark[6][i -1]}" href="#">${feat.properties.NAME} (<span></span>)</a></li>`);
+            });
+
+        }
 
 
         var legend = L.control({position: 'bottomright'});
@@ -135,7 +148,7 @@
 
             // loop through our density intervals and generate a label with a colored square for each interval
             for (var i = 0; i < grades.length; i++) {
-                console.log(grades[i]);
+                // console.log(grades[i]);
                 div.innerHTML +=
                     '<i style="background:' + styleCountries(grades[i], colors) + '"></i> ' +
                     grades[i - 1] + (grades[i] ? '&ndash;' + grades[i] + '<br>' : '+');
@@ -158,8 +171,8 @@
                     fillColor: styleCountries(feature.properties.deaths_per_million, colors)
                 }
             },
-            onEachFeature: (feature) => {
-                // console.log(feature);
+            onEachFeature: (feature, layer) => {
+                console.log(layer.feature.properties.NAME + ': ' + layer.feature.properties.deaths_per_million);
             }
         }).addTo(map);
 
@@ -190,13 +203,14 @@
      * @returns {string}
      */
     function styleCountries(feature, colors) {
-        return feature <= 3 ? colors.SunsetDark[6][0] :
-            feature <= 9 ? colors.SunsetDark[6][1] :
-                feature <= 20 ? colors.SunsetDark[6][2] :
-                    feature <= 60 ? colors.SunsetDark[6][3] :
-                        feature <= 120 ? colors.SunsetDark[6][4] :
-                            feature <= 410 ? colors.SunsetDark[6][5] :
-                                '#FFF';
+        return feature <= 0.01 ? '#FFF' :
+            feature <= 3 ? colors.SunsetDark[6][0] :
+                feature <= 9 ? colors.SunsetDark[6][1] :
+                    feature <= 20 ? colors.SunsetDark[6][2] :
+                        feature <= 60 ? colors.SunsetDark[6][3] :
+                            feature <= 120 ? colors.SunsetDark[6][4] :
+                                feature <= 410 ? colors.SunsetDark[6][5] :
+                                    '#FFF';
 
     }
 
