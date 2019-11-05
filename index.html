@@ -200,7 +200,7 @@
         // build legend based on each legendBreak, style with respective SunsetDark colors
         legendBreaks.forEach((brk, i) => {
             const color = i > 4 ? '#F1F1F1' : '#000';  // text color for legend, white for darker backgrounds
-            const backgroundCol = brk === 'Undefined' ? '#FFF' : colors.SunsetDark[6][i - 1];
+            const backgroundCol = brk === 'Undefined' ? '#AAA' : colors.SunsetDark[6][i - 1];
             legend.append(`<i style="background: ${ backgroundCol }; color: ${ color }"> ${ brk } </i>`);
         });
 
@@ -216,30 +216,14 @@
             },
             onEachFeature: (feature, layer) => {
                 layer.on('mouseover', (e) => {
-
-                    // display label for country stats on mouseover
-                    mouseoverLabel.onAdd = () => {
-                        var div = L.DomUtil.create('div', 'highlight-country');  // create info-box div
-
-                        // style border according to polygon style
-                        div.style.border = `3px solid ${ e.target.options.fillColor }`;
-
-                        // if stats are defined, display them with text; otherwise, display 'data unknown'
-                        const stats = e.target.feature.properties.deaths_per_million ?
-                            `${e.target.feature.properties.deaths_per_million.toFixed(0)} deaths per million residents
-                            <br>${e.target.feature.properties.count} incidents resulting in fatalities in 2018</br>` :
-                            `Data Unknown`;
-
-                        // apply html to mouseover label dynamically
-                        div.innerHTML = `<div class="country-name">${ e.target.feature.properties.NAME }</div> ${stats}`;
-                        return div;
-                    };
-                    mouseoverLabel.addTo(map);
+                    applyCountryLabel(e);
+                    highlightCountry(e);
                 });
 
                 // remove mouseover label on mouseout
-                layer.on('mouseout', () => {
+                layer.on('mouseout', (e) => {
                    mouseoverLabel.remove();
+                   resetCountryStyle(e);
                 });
 
                 layer.on('click', () => {
@@ -266,7 +250,7 @@
                         opacity: 1,
                         fillOpacity: 0.7,
                         weight: 1,
-                        radius: feature.properties.incident_fatalities * 4,
+                        radius: Math.sqrt(feature.properties.incident_fatalities) * 4,
                         // radius: 180,
                     }),
                     pointToLayer: (feature, latlng) => {
@@ -307,7 +291,13 @@
                             // "#c5287b","#7c1d6f"
                             const textColor = layer.options.fillColor === '#c5287b' || layer.options.fillColor === '#7c1d6f' ? '#FFF' : '#000';
                             div.innerHTML += `<div class="info-title" style="color: ${textColor}">Deaths Per Million Residents</div>`;
-                            Object.entries(tmp).forEach(([ctry, deaths]) => {
+
+                            const ordered = {};
+                            Object.keys(tmp).sort().forEach((key) => {
+                                ordered[key] = tmp[key];
+                            });
+
+                            Object.entries(ordered).forEach(([ctry, deaths]) => {
                                 console.log(ctry, deaths);
                                 const fatalities = deaths ? ` (${deaths.toFixed(0)})` : ``;
                                 div.innerHTML += `<span class="country-item" style="color: ${ textColor }"> ${ ctry } ${fatalities}</span>`;
@@ -345,6 +335,37 @@
     //         });
     }
 
+
+    function highlightCountry(e) {
+        e.target.setStyle({ weight: 5, opacity: 1 }).bringToFront();
+    }
+
+    function resetCountryStyle(e) {
+        e.target.setStyle({ weight: 1, opacity: 0.5 });
+    }
+    /**
+     * Apply country mouseover label
+     */
+    function applyCountryLabel(e) {
+        // display label for country stats on mouseover
+        mouseoverLabel.onAdd = () => {
+            var div = L.DomUtil.create('div', 'highlight-country');  // create info-box div
+
+            // style border according to polygon style
+            div.style.border = `3px solid ${ e.target.options.fillColor }`;
+
+            // if stats are defined, display them with text; otherwise, display 'data unknown'
+            const stats = e.target.feature.properties.deaths_per_million ?
+                `${e.target.feature.properties.deaths_per_million.toFixed(0)} deaths per million residents
+                            <br>${e.target.feature.properties.count} incidents resulting in fatalities in 2018</br>` :
+                `Data Unknown`;
+
+            // apply html to mouseover label dynamically
+            div.innerHTML = `<div class="country-name">${ e.target.feature.properties.NAME }</div> ${stats}`;
+            return div;
+        };
+        mouseoverLabel.addTo(map);
+    }
     /**
      * Style countries based on number of fatalities per 1 million people
      * @param feature
@@ -352,14 +373,14 @@
      * @returns {string}
      */
     function styleCountries(feature, colors) {
-        return feature <= 0.0001 ? '#FFF' :
+        return feature <= 0.0001 ? '#AAA' :
             feature <= 3 ? colors.SunsetDark[6][0] :
                 feature <= 9 ? colors.SunsetDark[6][1] :
                     feature <= 20 ? colors.SunsetDark[6][2] :
                         feature <= 60 ? colors.SunsetDark[6][3] :
                             feature <= 120 ? colors.SunsetDark[6][4] :
                                 feature <= 410 ? colors.SunsetDark[6][5] :
-                                    '#FFF';
+                                    '#AAA';
     }
 
     function hexToRGB(hex) {
