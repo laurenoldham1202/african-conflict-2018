@@ -234,6 +234,7 @@
                 layer.on('click', (e) => {
 
                     zoomToCountry(layer, e.target.feature.properties.NAME);
+                    infoBox.remove();  // remove legend info box
 
                     // reset full opacity map styling on map click
                     countriesLayer.setStyle({
@@ -316,21 +317,10 @@
                     };
                     infoBox.addTo(map);
 
-                    markers.bringToFront();
-
-                    // TODO: Try to filter marker cluster
-                    markers.eachLayer(markerLayer => {
-                        if (markerLayer.feature.properties.country === layer.feature.properties.NAME) {
-
-                        }
-                    });
-
                 } else {
                     // 'gray out' layers not in selected filter range
                     layer.setStyle({ fillOpacity: 0.2, opacity: 0.2 }).bringToBack();
                 }
-
-
             });
 
             // zoom to country bounds on country-item click
@@ -338,11 +328,10 @@
                 const ctry = this.innerText.split('(')[0].trim();
 
                 countriesLayer.eachLayer(layer => {
-                    // if (layer.feature.properties.NAME === ctry) {
-                    //     map.fitBounds(layer.getBounds());
-                    // }
                     zoomToCountry(layer, ctry);
                 });
+
+                infoBox.remove();  // remove legend info box
             });
         });
     }
