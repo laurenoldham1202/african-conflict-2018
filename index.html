@@ -199,6 +199,15 @@
                 layer.on('mouseover', (e) => {
 
                 });
+
+                layer.on('click', function() {
+                    // reset full opacity map styling on map click
+                    countriesLayer.setStyle({
+                        fillOpacity: 1,
+                        opacity: 0.5,
+                        weight: 1,
+                    });
+                });
             }
         }).addTo(map);
 
