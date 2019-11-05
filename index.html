@@ -45,15 +45,49 @@
             text-align: center;
             font-style: normal;
         }
+
+        .info-box {
+            position: absolute;
+            top: 3rem;
+            right: 0.7rem;
+            width: 15rem;
+            z-index: 1000;
+            padding: 0.75rem;
+            border-radius: 4px;
+            /*position: absolute;*/
+            /*top: 2rem;*/
+            /*right: 2rem;*/
+            /*width: 10rem;*/
+            /*height: 10rem;*/
+            /*z-index: 1000;*/
+            /*padding: 1rem;*/
+        }
+
+        .country-item {
+            margin: 0.5rem 0;
+        }
+
+        span.country-name {
+            /*font-size: 16px;*/
+            font-weight: 500;
+        }
+
+        .country-info {
+            font-size: 12px;
+        }
+
+        .info-title {
+            font-size: 18px;
+            font-weight: 500;
+        }
+
     </style>
 </head>
 
 <body>
 
 <div id="map"></div>
-<div id="map-legend">
-
-</div>
+<div id="map-legend"></div>
 
 <script src="https://d3js.org/d3-fetch.v1.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js"></script>
@@ -66,8 +100,11 @@
         center: [3.5832, 25.5085],
         zoom: 4,
     };
+
     // instantiate Leaflet map
     var map = L.map('map', options);
+
+    var infoBox = L.control();
 
     // add CARTO voyager tiles with no labels
     L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/rastertiles/voyager_nolabels/{z}/{x}/{y}.png', {
@@ -75,21 +112,25 @@
         attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy;<a href="https://carto.com/attribution">CARTO</a>'
     }).addTo(map);
 
+    // load country polygons, color styles, and conflict points
     const countriesJson = d3.json('data/africa-countries-counts.json');
     const conflictsJson = d3.json('data/africa-conflict-2018.json');
     const colorsJson = d3.json('data/sunset-dark-colors.json');
 
     Promise.all([countriesJson, conflictsJson, colorsJson]).then(dataReady);
 
+    // after all jsons are loaded
     function dataReady(data) {
 
         const countries = data[0];
         const conflicts = data[1];
         const colors = data[2];
 
+        // legend constants
         const legend = $('#map-legend');
         const legendBreaks = ['Undefined', '0 - 3', '3 - 9', '9 - 20', '20 - 60', '60 - 120', '120 - 410'];
 
+        // build legend based on each legendBreak, style with respective SunsetDark colors
         legendBreaks.forEach((brk, i) => {
             const color = i > 4 ? '#F1F1F1' : '#000';  // text color for legend, white for darker backgrounds
             const backgroundCol = brk === 'Undefined' ? '#FFF' : colors.SunsetDark[6][i - 1];
@@ -98,7 +139,6 @@
 
         var countriesLayer = L.geoJson(countries, {
             style: (feature) => {
-                // style each polygon categorically with Vivid color palette
                 return {
                     fillOpacity: 1,
                     color: '#FFF',
@@ -108,13 +148,13 @@
                 }
             },
             onEachFeature: (feature, layer) => {
-                // console.log(layer.feature.properties.NAME + ': ' + layer.feature.properties.deaths_per_million);
-                // console.log(layer.options.fillColor);
-                // console.log(feature);
+                layer.on('mouseover', (e) => {
+
+                });
             }
         }).addTo(map);
 
-        var markers = L.markerClusterGroup();
+        var markers = L.markerClusterGroup({spiderfyOnMaxZoom: false, disableClusteringAtZoom: 8});
 
         // loop through each signal
         conflicts.features.forEach((feature) => {
@@ -125,7 +165,7 @@
                         fillColor: 'whitesmoke',
                         color: '#414140',
                         opacity: 1,
-                        fillOpacity: 1,
+                        fillOpacity: 0.7,
                         weight: 1,
                         radius: feature.properties.incident_fatalities * 4,
                         // radius: 180,
@@ -146,26 +186,72 @@
 
         $('#map-legend i')
             .on('mouseover', function() {
+                const ctrys = [];
+                const tmp = {};
                 countriesLayer.eachLayer(layer => {
                     if (this.style.background === hexToRGB(layer.options.fillColor)) {
+                        // ctrys.push(layer.feature.properties.NAME);
+                        // TODO sort alphabetically
+                        tmp[layer.feature.properties.NAME] = layer.feature.properties.deaths_per_million;
+                        // console.log(tmp);
 
-                        // console.log(hexToRGB(layer.options.fillColor));
-                        // console.log(layer.feature.properties.NAME);
                         layer.setStyle({ fillOpacity: 1, opacity: 1 }).bringToFront();
+
+                        // console.log(layer.feature.properties.NAME);
+
+                        // TODO exclude undefined from reading in numbers of deaths
+                        infoBox.onAdd = () => {
+                            var div = L.DomUtil.create('div', 'info-box');  // create info-box div
+                            div.style.background = this.style.background;
+                            // console.log()
+                            // "#c5287b","#7c1d6f"
+                            const textColor = layer.options.fillColor === '#c5287b' || layer.options.fillColor === '#7c1d6f' ? '#FFF' : '#000';
+                            div.innerHTML += `<div class="info-title" style="color: ${textColor}">Deaths Per Million Residents</div>`;
+                            Object.entries(tmp).forEach(([ctry, deaths]) => {
+                                console.log(ctry, deaths);
+                                div.innerHTML += `<div class="country-item" style="color: ${textColor}"><span class="country-name">${ ctry }</span> (~${deaths.toFixed(0)} Deaths/Million) </div>`;
+                                // div.innerHTML += `<div class="country-name">${ ctry }: ${ deaths.toFixed(0) } Deaths Per Million Residents </div>`;
+
+                            });
+
+                            // ctrys.sort().forEach(ctry => {
+                            //     // TODO: Pull in deaths
+                            //     div.innerHTML += `<div class="country-name">${ ctry }</div><div class="country-info"></div>`;
+                            // });
+                            // div.innerHTML += `<p> ${ ctrys.join('\n') } </p><br>`;
+                        //     const target = e.target.feature.properties;
+                        //     div.style.background = styleColor(target.type_generic);  // apply dynamic styles
+                        //
+                        //     // content
+                        //     div.innerHTML = `<div class='center'> <h6>${ target.name }</h3></div>
+                        // <hr> <b>${ target.name }</b> is a ${ target.type } establishment located in ${ target.city }
+                        // (${ target.county } County), New York. </div></div>`;
+                            return div;
+                        }
+                        infoBox.addTo(map);
+
+                        // TODO: Try to filter marker cluster
+                        markers.eachLayer(markerLayer => {
+                            if (markerLayer.feature.properties.country === layer.feature.properties.NAME) {
+
+                            }
+                        });
 
                     } else {
                         layer.setStyle({ fillOpacity: 0.2, opacity: 0.2 }).bringToBack();
                     }
                 });
+
+
             })
             .on('mouseout', function() {
-                console.log(countriesLayer);
                 countriesLayer.setStyle({
                     fillOpacity: 1,
-                    color: '#FFF',
                     opacity: 0.5,
                     weight: 1,
                 });
+
+                // markers.bringToFront();
             });
     }
 
