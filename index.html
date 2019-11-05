@@ -144,17 +144,29 @@
         // add marker cluster layer to map
         map.addLayer(markers);
 
-        $('#map-legend i').on('mouseover', function() {
-            // console.log(this.style.background);
+        $('#map-legend i')
+            .on('mouseover', function() {
+                countriesLayer.eachLayer(layer => {
+                    if (this.style.background === hexToRGB(layer.options.fillColor)) {
 
-            countriesLayer.eachLayer(layer => {
-                if (this.style.background === hexToRGB(layer.options.fillColor)) {
+                        // console.log(hexToRGB(layer.options.fillColor));
+                        // console.log(layer.feature.properties.NAME);
+                        layer.setStyle({ fillOpacity: 1, opacity: 1 }).bringToFront();
 
-                    // console.log(hexToRGB(layer.options.fillColor));
-                    console.log(layer.feature.properties.NAME);
-                }
+                    } else {
+                        layer.setStyle({ fillOpacity: 0.2, opacity: 0.2 }).bringToBack();
+                    }
+                });
             })
-        });
+            .on('mouseout', function() {
+                console.log(countriesLayer);
+                countriesLayer.setStyle({
+                    fillOpacity: 1,
+                    color: '#FFF',
+                    opacity: 0.5,
+                    weight: 1,
+                });
+            });
     }
 
     /**
@@ -164,7 +176,7 @@
      * @returns {string}
      */
     function styleCountries(feature, colors) {
-        return feature <= 0.01 ? '#FFF' :
+        return feature <= 0.0001 ? '#FFF' :
             feature <= 3 ? colors.SunsetDark[6][0] :
                 feature <= 9 ? colors.SunsetDark[6][1] :
                     feature <= 20 ? colors.SunsetDark[6][2] :
