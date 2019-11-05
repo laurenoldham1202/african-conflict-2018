@@ -86,13 +86,14 @@
             padding: 0.75rem;
             border-radius: 4px;
             overflow-y: auto !important;
-            /*height: 5.5rem;*/
+            border: 2px solid rgba(255,255,255,0.5);
         }
 
-        span.country-item {
+        .country-item {
             margin: 0.5rem 0.5rem 0 0;
             font-size: 16px;
             cursor: pointer;
+            display: inline-block;
         }
 
         .country-item:hover {
@@ -217,7 +218,11 @@
             onEachFeature: (feature, layer) => {
                 layer.on('mouseover', (e) => {
                     applyCountryLabel(e);
-                    highlightCountry(e);
+
+                    // restrict mouseover styling to higher zoom levels (so they don't cover markers)
+                    if (map.getZoom() < 6) {
+                        highlightCountry(e);
+                    }
                 });
 
                 // remove mouseover label on mouseout
@@ -226,7 +231,10 @@
                    resetCountryStyle(e);
                 });
 
-                layer.on('click', () => {
+                layer.on('click', (e) => {
+
+                    zoomToCountry(layer, e.target.feature.properties.NAME);
+
                     // reset full opacity map styling on map click
                     countriesLayer.setStyle({
                         fillOpacity: 1,
@@ -237,28 +245,26 @@
             }
         }).addTo(map);
 
-        var markers = L.markerClusterGroup({spiderfyOnMaxZoom: false, disableClusteringAtZoom: 8});
+        // marker cluster with locations at actual latlng, disable clustering at 7 zoom
+        var markers = L.markerClusterGroup({ spiderfyOnMaxZoom: false, disableClusteringAtZoom: 7 });
 
         // loop through each signal
         conflicts.features.forEach((feature) => {
-            // var coords = feature.geometry.coordinates,
-                // marker = L.circleMarker([coords[1], coords[0]]);
-                var marker = L.geoJson(feature, {
-                    style: () => ({
-                        fillColor: 'whitesmoke',
-                        color: '#414140',
-                        opacity: 1,
-                        fillOpacity: 0.7,
-                        weight: 1,
-                        radius: Math.sqrt(feature.properties.incident_fatalities) * 4,
-                        // radius: 180,
-                    }),
-                    pointToLayer: (feature, latlng) => {
-                        return L.circleMarker(latlng)
-                            .bindTooltip(`Number of Fatalities: ${feature.properties.incident_fatalities}
-                                          <br>Country: ${feature.properties.country}`);
-                    }
-                });
+            var marker = L.geoJson(feature, {
+                style: () => ({
+                    fillColor: 'whitesmoke',
+                    color: '#414140',
+                    opacity: 1,
+                    fillOpacity: 0.7,
+                    weight: 1,
+                    radius: Math.sqrt(feature.properties.incident_fatalities) * 4,
+                }),
+                pointToLayer: (feature, latlng) => {
+                    return L.circleMarker(latlng)
+                        .bindTooltip(`Number of Fatalities: ${feature.properties.incident_fatalities}
+                                      <br>Country: ${feature.properties.country}`);
+                }
+            });
 
             // add each marker to markers cluster
             markers.addLayer(marker);
@@ -267,74 +273,85 @@
         // add marker cluster layer to map
         map.addLayer(markers);
 
-        $('#map-legend i')
-            .on('click', function() {
-                const ctrys = [];
-                const tmp = {};
-                countriesLayer.eachLayer(layer => {
-                    if (this.style.background === hexToRGB(layer.options.fillColor)) {
-                        // ctrys.push(layer.feature.properties.NAME);
-                        // TODO sort alphabetically
-                        tmp[layer.feature.properties.NAME] = layer.feature.properties.deaths_per_million;
-                        // console.log(tmp);
+        $('#map-legend i').on('click', function() {
+            // reset continent bounds on legend click
+            map.setView(options.center, options.zoom);
 
-                        layer.setStyle({ fillOpacity: 1, opacity: 1 }).bringToFront();
+            const countriesObj = {};
 
+            // loop through countriesLayer
+            countriesLayer.eachLayer(layer => {
+                // match the legend color to the polygon fill colors
+                if (this.style.background === hexToRGB(layer.options.fillColor)) {
+                    // create new object with country name key and dpm value
+                    countriesObj[layer.feature.properties.NAME] = layer.feature.properties.deaths_per_million;
 
-                        // console.log(layer.feature.properties.NAME);
+                    // alphabetize countries
+                    const countriesOrdered = {};
+                    Object.keys(countriesObj).sort().forEach((key) => {
+                        countriesOrdered[key] = countriesObj[key];
+                    });
 
-                        // TODO exclude undefined from reading in numbers of deaths
-                        infoBox.onAdd = () => {
-                            var div = L.DomUtil.create('div', 'info-box');  // create info-box div
-                            div.style.background = this.style.background;
-                            console.log(tmp);
-                            // "#c5287b","#7c1d6f"
-                            const textColor = layer.options.fillColor === '#c5287b' || layer.options.fillColor === '#7c1d6f' ? '#FFF' : '#000';
-                            div.innerHTML += `<div class="info-title" style="color: ${textColor}">Deaths Per Million Residents</div>`;
+                    // style matching polygons by visually pushing them to front
+                    layer.setStyle({ fillOpacity: 1, opacity: 1 }).bringToFront();
 
-                            const ordered = {};
-                            Object.keys(tmp).sort().forEach((key) => {
-                                ordered[key] = tmp[key];
-                            });
+                    // add info box with all countries in legend field
+                    infoBox.onAdd = () => {
+                        var div = L.DomUtil.create('div', 'info-box');  // create info-box div
+                        div.style.background = this.style.background;  // style with matching background color
 
-                            Object.entries(ordered).forEach(([ctry, deaths]) => {
-                                console.log(ctry, deaths);
-                                const fatalities = deaths ? ` (${deaths.toFixed(0)})` : ``;
-                                div.innerHTML += `<span class="country-item" style="color: ${ textColor }"> ${ ctry } ${fatalities}</span>`;
-                                //div.innerHTML += `<div class="country-item" style="color: ${textColor}"><span class="country-name">${ ctry }</span> (~${deaths.toFixed(0)} Deaths/Million) </div>`;
-                                // div.innerHTML += `<div class="country-name">${ ctry }: ${ deaths.toFixed(0) } Deaths Per Million Residents </div>`;
+                        // give lighter text color for darker backgrounds
+                        const textColor = layer.options.fillColor === '#c5287b' || layer.options.fillColor === '#7c1d6f' ? '#FFF' : '#000';
 
-                            });
+                        // header label for info box - outside of loop, it doesn't need to be written each time
+                        div.innerHTML += `<div class="info-title" style="color: ${textColor}">Deaths Per Million Residents</div>`;
 
-                            return div;
-                        };
-                        infoBox.addTo(map);
-
-                        // TODO: Try to filter marker cluster
-                        markers.eachLayer(markerLayer => {
-                            if (markerLayer.feature.properties.country === layer.feature.properties.NAME) {
-
-                            }
+                        Object.entries(countriesOrdered).forEach(([ctry, deaths]) => {
+                            // only define deaths if data is defined, otherwise just bring country name
+                            const fatalities = deaths ? ` (${ deaths.toFixed(0) })` : ``;
+                            div.innerHTML += `<div class="country-item" style="color: ${textColor}"> ${ctry} ${fatalities}</div>`;
                         });
 
-                    } else {
-                        layer.setStyle({ fillOpacity: 0.2, opacity: 0.2 }).bringToBack();
-                    }
+                        return div;
+                    };
+                    infoBox.addTo(map);
+
+                    markers.bringToFront();
+
+                    // TODO: Try to filter marker cluster
+                    markers.eachLayer(markerLayer => {
+                        if (markerLayer.feature.properties.country === layer.feature.properties.NAME) {
+
+                        }
+                    });
+
+                } else {
+                    // 'gray out' layers not in selected filter range
+                    layer.setStyle({ fillOpacity: 0.2, opacity: 0.2 }).bringToBack();
+                }
+
+
+            });
+
+            // zoom to country bounds on country-item click
+            $('.country-item').on('click', function() {
+                const ctry = this.innerText.split('(')[0].trim();
+
+                countriesLayer.eachLayer(layer => {
+                    // if (layer.feature.properties.NAME === ctry) {
+                    //     map.fitBounds(layer.getBounds());
+                    // }
+                    zoomToCountry(layer, ctry);
                 });
-
-
-            })
-    //         .on('mouseout', function() {
-    //             countriesLayer.setStyle({
-    //                 fillOpacity: 1,
-    //                 opacity: 0.5,
-    //                 weight: 1,
-    //             });
-    //
-    //             // markers.bringToFront();
-    //         });
+            });
+        });
     }
 
+    function zoomToCountry(layer, ctry) {
+        if (layer.feature.properties.NAME === ctry) {
+            map.fitBounds(layer.getBounds());
+        }
+    }
 
     function highlightCountry(e) {
         e.target.setStyle({ weight: 5, opacity: 1 }).bringToFront();
