@@ -111,6 +111,24 @@
             text-align: right;
         }
 
+        .highlight-country {
+            font-family: 'Roboto', sans-serif;
+            position: absolute;
+            top: 0;
+            right: 36rem;
+            width: 15rem;
+            z-index: 2000;
+            padding: 0.75rem;
+            border-radius: 4px;
+            background: #FFF;
+        }
+
+        .highlight-country .country-name {
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+        }
+
     </style>
 </head>
 
@@ -153,6 +171,7 @@
     var map = L.map('map', options);
 
     var infoBox = L.control();
+    var mouseoverLabel = L.control();
 
     // add CARTO voyager tiles with no labels
     L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/rastertiles/voyager_nolabels/{z}/{x}/{y}.png', {
@@ -198,9 +217,32 @@
             onEachFeature: (feature, layer) => {
                 layer.on('mouseover', (e) => {
 
+                    // display label for country stats on mouseover
+                    mouseoverLabel.onAdd = () => {
+                        var div = L.DomUtil.create('div', 'highlight-country');  // create info-box div
+
+                        // style border according to polygon style
+                        div.style.border = `3px solid ${ e.target.options.fillColor }`;
+
+                        // if stats are defined, display them with text; otherwise, display 'data unknown'
+                        const stats = e.target.feature.properties.deaths_per_million ?
+                            `${e.target.feature.properties.deaths_per_million.toFixed(0)} deaths per million residents
+                            <br>${e.target.feature.properties.count} incidents resulting in fatalities in 2018</br>` :
+                            `Data Unknown`;
+
+                        // apply html to mouseover label dynamically
+                        div.innerHTML = `<div class="country-name">${ e.target.feature.properties.NAME }</div> ${stats}`;
+                        return div;
+                    };
+                    mouseoverLabel.addTo(map);
                 });
 
-                layer.on('click', function() {
+                // remove mouseover label on mouseout
+                layer.on('mouseout', () => {
+                   mouseoverLabel.remove();
+                });
+
+                layer.on('click', () => {
                     // reset full opacity map styling on map click
                     countriesLayer.setStyle({
                         fillOpacity: 1,
