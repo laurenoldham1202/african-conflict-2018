@@ -78,9 +78,6 @@
 
         .info-box {
             font-family: 'Roboto', sans-serif;
-            position: absolute;
-            top: 30rem;
-            right: 0.7rem;
             width: 33rem;
             z-index: 1000;
             padding: 0.75rem;
@@ -114,14 +111,12 @@
 
         .highlight-country {
             font-family: 'Roboto', sans-serif;
-            position: absolute !important;
-            top: 0 !important;
-            right: 56rem !important;
             width: 15rem;
             z-index: 2000;
             padding: 0.75rem;
             border-radius: 4px;
             background: #FFF;
+            margin: 1rem;
         }
 
         .highlight-country .country-name {
@@ -175,8 +170,8 @@
 
     // instantiate Leaflet map and controls
     var map = L.map('map', options);
-    var infoBox = L.control();
-    var mouseoverLabel = L.control();
+    var infoBox = L.control({position: 'bottomright'});
+    var mouseoverLabel = L.control({position: 'bottomleft'});
 
     // add CARTO voyager tiles with no labels
     L.tileLayer('https://cartodb-basemaps-{s}.global.ssl.fastly.net/rastertiles/voyager_nolabels/{z}/{x}/{y}.png', {
@@ -363,6 +358,8 @@
      * Apply country mouseover label
      */
     function applyCountryLabel(e) {
+
+        // mouseoverLabel.options.removeClass('leaflet-topright');
         // display label for country stats on mouseover
         mouseoverLabel.onAdd = () => {
             var div = L.DomUtil.create('div', 'highlight-country');  // create info-box div
@@ -381,6 +378,10 @@
             return div;
         };
         mouseoverLabel.addTo(map);
+        // mouseoverLabel._container.classList.remove('leaflet-control');
+        mouseoverLabel._container.classList.remove('leaflet-control');
+        console.log(mouseoverLabel._container.classList);
+
     }
     /**
      * Style countries based on number of fatalities per 1 million people
