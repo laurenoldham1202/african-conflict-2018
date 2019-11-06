@@ -248,7 +248,7 @@
         // marker cluster with locations at actual latlng, disable clustering at 7 zoom
         var markers = L.markerClusterGroup({ spiderfyOnMaxZoom: false, disableClusteringAtZoom: 7 });
 
-        // loop through each signal
+        // loop through each conflict location
         conflicts.features.forEach((feature) => {
             var marker = L.geoJson(feature, {
                 style: () => ({
@@ -359,7 +359,6 @@
      */
     function applyCountryLabel(e) {
 
-        // mouseoverLabel.options.removeClass('leaflet-topright');
         // display label for country stats on mouseover
         mouseoverLabel.onAdd = () => {
             var div = L.DomUtil.create('div', 'highlight-country');  // create info-box div
@@ -378,10 +377,6 @@
             return div;
         };
         mouseoverLabel.addTo(map);
-        // mouseoverLabel._container.classList.remove('leaflet-control');
-        mouseoverLabel._container.classList.remove('leaflet-control');
-        console.log(mouseoverLabel._container.classList);
-
     }
     /**
      * Style countries based on number of fatalities per 1 million people
