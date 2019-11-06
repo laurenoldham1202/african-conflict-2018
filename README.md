@@ -24,3 +24,14 @@ Using ogr, filter the data again, pulling only African countries from the new `c
 ```
 $ ogr2ogr -f "GeoJSON" -where "CONTINENT='Africa'" africa-countries.json countries.json
 ```
+
+The remainder of geoprocessing is handled by node scripts in the buildScripts project directory.
+
+## Technology
+Map project utilizes a variety of data manipulation and visualization packages, including
+- Leaflet
+- Leaflet MarkerClusters
+- D3
+- JQuery
+- Mapshaper
+- Csv-parse
