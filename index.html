@@ -114,9 +114,9 @@
 
         .highlight-country {
             font-family: 'Roboto', sans-serif;
-            position: absolute;
-            top: 0;
-            right: 36rem;
+            position: absolute !important;
+            top: 0 !important;
+            right: 56rem !important;
             width: 15rem;
             z-index: 2000;
             padding: 0.75rem;
@@ -150,10 +150,15 @@
         The map is created with Leaflet and the Leaflet ClusterMarkers plugin.
     </p>
 
-    <p>Data is provided by <a href="https://www.acleddata.com/">The Armed Conflict Location and Event Data Project (ACLED)</a>.
-        Shapefiles are provided by <a href="https://www.naturalearthdata.com/downloads/">Natural Earth Data</a> (1:110m Cultural Vectors > Admin 0 - Countries).</p>
+    <p>Data is provided by <a href="https://www.acleddata.com/" target="_blank">The Armed Conflict Location and Event Data Project (ACLED)</a>.
+        Shapefiles are provided by <a href="https://www.naturalearthdata.com/downloads/" target="_blank">Natural Earth Data</a>
+        (1:110m Cultural Vectors > Admin 0 - Countries).</p>
 
-    <div class="footer">Map authored by Lauren Oldham, November 2019. <a href="https://newmapsplus.as.uky.edu/">New Maps Plus MAP-675.</a></div>
+    <div class="footer">
+        <a href="https://github.com/laurenoldham1202/african-conflict-2018" target="_blank">Project GitHub Repository</a>
+        <br>Map authored by Lauren Oldham, November 2019. <a href="https://newmapsplus.as.uky.edu/" target="_blank">New Maps Plus MAP-675.</a>
+
+    </div>
 </div>
 
 <script src="https://d3js.org/d3-fetch.v1.min.js"></script>
@@ -168,9 +173,8 @@
         zoom: 4,
     };
 
-    // instantiate Leaflet map
+    // instantiate Leaflet map and controls
     var map = L.map('map', options);
-
     var infoBox = L.control();
     var mouseoverLabel = L.control();
 
@@ -262,8 +266,13 @@
                 }),
                 pointToLayer: (feature, latlng) => {
                     return L.circleMarker(latlng)
-                        .bindTooltip(`Number of Fatalities: ${feature.properties.incident_fatalities}
-                                      <br>Country: ${feature.properties.country}`);
+                        .bindTooltip(`
+                            <strong>Number of Fatalities:</strong> ${feature.properties.incident_fatalities}
+                            <br><strong>Date:</strong> ${feature.properties.date}
+                            <br><strong>Location:</strong> ${feature.properties.location}, ${feature.properties.country}
+                            <br><strong>Involved parties:</strong> ${feature.properties.actor1}, ${feature.properties.actor2}
+                            `)
+                        .bringToFront();
                 }
             });
 
@@ -336,6 +345,7 @@
         });
     }
 
+    // TODO: Add offset for non-centered map
     function zoomToCountry(layer, ctry) {
         if (layer.feature.properties.NAME === ctry) {
             map.fitBounds(layer.getBounds());
@@ -343,7 +353,7 @@
     }
 
     function highlightCountry(e) {
-        e.target.setStyle({ weight: 5, opacity: 1 }).bringToFront();
+        e.target.setStyle({ weight: 5, opacity: 1 });
     }
 
     function resetCountryStyle(e) {
